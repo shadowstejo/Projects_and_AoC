@@ -13,7 +13,7 @@ with open('input.txt') as f:
             floor = floor
             counted += 1
         if floor == -1: #breaks if floor == -1
-            print(counted) 
-            break
+            print(counted) #remove for part1
+            break #remove for part1
     print(floor)
         
