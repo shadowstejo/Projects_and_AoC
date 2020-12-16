@@ -1,4 +1,4 @@
-with open(r"C:\Users\Steppo\Projekte\pyth\adventofcode\day2\input.txt", "r") as f:
+with open("input.txt") as f:
     list2 = f.readlines()
     lgt = len(list2)
     gesamt = 0
