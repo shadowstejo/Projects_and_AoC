@@ -1,6 +1,6 @@
 
 
-with open(r"C:\Users\Steppo\Projekte\pyth\adventofcode\day1\input_numbers.txt", "r") as f:
+with open("input_numbers.txt") as f:
     list2 = f.readlines()
     lgt = len(list2)
     for x in range(lgt):
