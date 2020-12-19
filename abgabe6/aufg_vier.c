@@ -28,6 +28,7 @@ String decode(String secret_message) {
 void test_decode() {
     test_equal_s(decode("Kiltiznnrvivm"), "Programmieren");
     test_equal_s(decode("1"), "1");
+    test_equal_s(decode("a"), "z");
     test_equal_s(decode("Blau"), "Yozf");
     test_equal_s(decode("FreeWilly"), "UivvDroob");
     test_equal_s(decode("Zgyzhs"), "Atbash");
