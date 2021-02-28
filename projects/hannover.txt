@@ -1,3 +1,6 @@
+Text-datei zu "zweite.py" im Rahmen von einem Geocache zum suchen von Orts-Namen, welche ein Anagram bilden.
+Leider in dieser Datei keinen Treffer. gesuchtes Wort war u.a. Brinkoost
+
 
 Hannover
 Zur Navigation springenZur Suche springen
