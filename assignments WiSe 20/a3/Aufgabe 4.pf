@@ -1,0 +1,206 @@
+﻿#<	Stephan Jokiel
+	Maxine Rahlfes	>#
+
+# a)
+# Convert chess board position, like "A1", to a 2D point, like [1, 1].
+
+NUM_A: "A" str->chars .0 ! # Der ASCII-Wert für A
+NUM_a: "a" str->chars .0 ! # Der ASCII-Wert für a
+NUM_H: "H" str->chars .0 ! # Der ASCII-Wert für H
+NUM_h: "h" str->chars .0 ! # Der ASCII-Wert für h
+
+#<
+@param pos Position der Form "A1"
+@return Gibt den, in ein Array (und Buchstaben zu Zahlen) umgewandelten String aus. "A1" wird zu [1 1]. 
+Es sollen aber nur die Punkte für die Schachfelder A1 bis H8 ausgeben werden, andernfalls wird ein leeseres Array zurückgegeben.
+>#
+
+#< Zunächst wird geprüft, ob es sich um eine str mit genau 2 Positionen handelt
+ Dann wird die 2. Position im Str außerhalb von 1 und 8 liegt, dann soll ein leeres Array zurückgegeben werden.
+ In den beiden folgenden conditionen wird geprüft ob es sich um einen Groß- oder Kleinbuchstaben handelt und dann als Punkt ausgegeben
+ Zum Schluss wird festgehalten, dass wenn die vorherigen conditions nicht zutrafen, dann soll ein leeres Array zurückgegeben werden.>#
+
+pos-to-point: (pos :Str -> :Arr) {
+    { pos length 2 != } { 
+        [] 
+        } 
+    { pos .1 int 8 <= pos .1 int 0 > and not } { 
+        [] 
+        }
+    { pos .0 str->chars .0 dup NUM_a >= swap NUM_h <= and } { 
+        [pos .0 str->chars .0 NUM_a - 1 +, pos .1 int] 
+        }
+    { pos .0 str->chars .0 dup NUM_A >= swap NUM_H <= and } { 
+        [pos .0 str->chars .0 NUM_A - 1 +, pos .1 int] 
+        }
+    { true } { [] }
+
+} cond-fun
+
+test-pos-to-point: {
+    "a1" pos-to-point [1, 1] test=
+    "A1" pos-to-point [1 1] test=
+    "H8" pos-to-point [8 8] test=
+    "B6" pos-to-point [2 6] test=
+    "f5" pos-to-point [6 5] test=
+    "G4" pos-to-point [7 4] test=
+    "G9" pos-to-point [] test=
+    "x1" pos-to-point [] test=
+    ""   pos-to-point [] test=
+} fun
+
+ test-pos-to-point
+
+# b)
+# Check whether p is a valid chess board position of the Form "A1".
+#<
+@param p Position der Form "A1"
+@return gibt true oder false aus, je nachdem ob die Position auf dem Schachbrett liegt, d.h. zwischen "A1" und "H8" oder nicht.
+>#
+pos-valid: (p :Str -> :Bool) {
+    { p length 2 != } { 
+        false 
+        }
+    { p .1 int 8 <= p .1 int 0 > and not} { 
+        false 
+        }
+    { p .0 str->chars .0 dup NUM_a >= swap NUM_h <= 
+    and p .0 str->chars .0 dup NUM_A >= swap NUM_H <= 
+    and or } { 
+        true 
+        }
+    { true } { 
+        false 
+        }       
+} cond-fun 
+
+test-pos-valid: {
+    "A1"  pos-valid true test=
+    "H8"  pos-valid true test=
+    "I6"  pos-valid false test=
+    "A9"  pos-valid false test=
+    "B0"  pos-valid false test= 
+    # b) further examples
+    ""    pos-valid false test=
+    "A10" pos-valid false test=
+} fun
+
+test-pos-valid
+
+# c)
+# Convert 2D point of the form [1, 1] to a chess board position of the form "A1".
+#<
+@param a Array eines Punktes auf dem Schachbrett [1 1] beispielsweise. (Hinweis: [1, 1] und [1 1] sind identisch.)
+@return gibt den Umgewandelten Array als String aus. [1 1] wird zu "A1"
+>#
+point-to-pos: (a :Arr -> :Str) {
+    { a .0 8 <= a .0 0 >= and } { a .0 64 + char->str a .1 str + } 
+    { true } { "" }
+} cond-fun
+      
+
+
+test-point-to-pos: {
+    [1 1] point-to-pos "A1" test=
+    [2 2] point-to-pos "B2" test=
+    [4 2] point-to-pos "D2" test=
+    # c) further examples
+} fun
+
+test-point-to-pos
+
+# d)
+# Computes the possible next positions of the knight (Springer) given its current position.
+#<
+@param p Start-Position des Springers der Form "A1","B4", "C9" etc. für welche alle mögl. Positionen berechnet werden sollen.
+@return gibt in einem Array die mögl. Positionen wieder, welche durch einen knight-move erreicht werden können. z.B.["B3", "C2"]
+>#
+knight-next-positions: (p :Str -> :Arr) {
+    p pos-to-point p!
+    p .0 px!
+    p .1 py!
+    # create all possible positions (some of which may not be on the board)
+    [ 
+        [px 1 +  py 2 +] point-to-pos
+        [px 2 +  py 1 +] point-to-pos
+        [px 1 +  py 2 -] point-to-pos
+        [px 2 +  py 1 -] point-to-pos
+        [px 1 -  py 2 +] point-to-pos
+        [px 2 -  py 1 +] point-to-pos
+        [px 1 -  py 2 -] point-to-pos
+        [px 2 -  py 1 -] point-to-pos
+    ] a!
+    # remove invalid positions (the ones not on the board)
+    [a { dup pos-valid not {pop} if } for] sort
+} fun
+
+test-knight-next-positions: {
+    "A1" knight-next-positions ["B3", "C2"] test=
+    "H8" knight-next-positions ["F7", "G6"] test=
+    "H8" knight-next-positions ["F7", "G6"] test=
+} fun
+
+test-knight-next-positions
+
+# Check whether the move from pos-old to pos-new is valid for the given piece.
+valid-move: (piece :Sym, pos-old :Str, pos-new :Str -> :Bool) {
+    { pos-old pos-new = 
+        } {
+            false
+        } 
+    { pos-old pos-valid not 
+        } {
+            false
+        } 
+    { pos-new pos-valid not } {
+        false
+    } 
+    { true } {
+        pos-old pos-to-point p!
+        pos-new pos-to-point q!
+        p .0 px! p .1 py!
+        q .0 qx! q .1 qy!
+        [
+            { piece :rook = } { # Turm
+                px qx =   py qy =   or
+            }
+            { piece :knight = } { # Springer
+                pos-old knight-next-positions poses!
+                poses pos-new contains
+            }
+            { piece :bishop = } { # Läufer
+                px qx - abs   py qy - abs   =
+            }
+            { true } {
+                "unknown piece " piece str + println
+                false
+            }
+         ] cond
+    }
+} cond-fun
+
+test-valid-move: {
+    :rook "A1" "A1" valid-move false test=
+    :rook "A1" "H1" valid-move true test=
+    :rook "A1" "H2" valid-move false test=
+    :rook "A3" "C3" valid-move true test=
+    :rook "A3" "C2" valid-move false test=
+
+    :bishop "A1" "B2" valid-move true test=
+    :bishop "B2" "A1" valid-move true test=
+    :bishop "F4" "E5" valid-move true test=
+    :bishop "E5" "F4" valid-move true test=
+    :bishop "A1" "B3" valid-move false test=
+    :bishop "B2" "A2" valid-move false test=
+    :bishop "F4" "F5" valid-move false test=
+    :bishop "E5" "E4" valid-move false test=
+
+    :knight "A1" "B3" valid-move true test=
+    :knight "A1" "C2" valid-move true test=
+    :knight "A1" "C3" valid-move false test=
+    :knight "H8" "G6" valid-move true test=
+    :knight "H8" "A1" valid-move false test=
+} fun
+
+test-valid-move
+test-stats

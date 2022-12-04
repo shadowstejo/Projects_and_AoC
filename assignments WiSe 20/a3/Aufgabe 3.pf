@@ -1,0 +1,174 @@
+﻿#<	Stephan Jokiel
+	Maxine Rahlfes	>#
+
+START-OFFER: 1.0 !        # An auction has an initial offer of 1.0€
+AUCTION-TIME: 60 !        # An auction has a limited time of 60 seconds
+
+# The different states of an auction
+# 15                      The auction has a start time :Int
+# [1.0 "" 75]             The auction has an initial offer, an empty bidder and the end time (start time + AUCTION-TIME) :Arr
+# [16.70 "Tim" 75]        Different people can bid 
+# [18.70 "Beren" 75]
+# [21.70 "Tim" 75]
+# "Tim"                   The auctions ends when the time is run out. :Str
+
+#<Updates an auction, if there is a bidder with an higher offer.
+
+#<Bei einer Auktion sollen verschiedene BieterInnen ihr Gebot abgeben können. Das Gebot startet bei 1 Euro und 
+begenzt sich auf eine Zeit von 60 Sekunden. Die Funktion soll nach Ablauf der Zeit die höchstbietende Person bestimmen können.
+Gebote, die außerhalb der Zeit abgegeben werden, werden nicht beachtet sowie Gebote, die geringer sind als ein vorrangegenagenes Gebot. 
+Außerdem zählt es nicht, wenn der oder die gleiche BiterIn das Gebot erhöt. Leere Strungs "" als BiterIn werden nicht gezählt.
+>#
+
+
+@param auction The current state of the auction
+@param bidder The name of the bidder
+@param offer The offer by the bidder
+@return The new state of the auction or the old state.
+>#
+
+:wartend, :laeuft, :beendet 
+
+bid: (auction :Obj, bidder :Str, offer :Num -> :Obj ){     
+    [
+        { auction int?} { auction }            # stellt fest, dass die Auktion noch nicht begonnen hat
+        { auction arr?} { [                     # hier ist die Auktion aktiv
+                            { bidder "" = } { auction } # keine Veränderung, wenn Bieter leerer Str.
+                            { auction .0 offer < bidder auction .1 != and} { [ offer bidder auction .2] } #neue/r BieterIn und Gebot
+                            { auction .1 "" = } { [auction .0 bidder auction .2] } # neue/r BieterIn, wenn vorher noch kein/e BieterIn bekannt war
+                            { true } {auction}
+                           ] cond 
+                        }
+        { auction str? } { auction }
+    ] cond
+}fun
+
+test-bid: (){
+    10 "Tim" 1.0 bid 10 test=
+    "Beren" "Tim" 20.0 bid "Beren" test=
+    [START-OFFER "" 14] "Beren" START-OFFER bid [START-OFFER "Beren" 14] test=
+    [0.0 "" 14] "Beren" 18 bid [18 "Beren" 14] test=
+    [10.50 "Beren" 14] "Beren" 18 bid [10.50 "Beren" 14] test=
+    [10.0 "Tim" 16] "Beren" 5.0 bid [10.0 "Tim" 16] test=
+    [0.0 "" 14] "" 5.0 bid [0.0 "" 14] test= 
+    [5.0 "Beren" 14] "" 10.0 bid [5.0 "Beren" 14] test=
+    test-stats
+   
+}fun
+
+test-bid
+
+#< Updates the auction depending on the time. This is necessary when the start or end time of the auction is reached.
+
+@param auction The current state of the auction
+@param time The current time in seconds
+@return The new state of the auction or the old state.
+>#
+update-auction:(auction :Obj, time :Int -> :Obj){
+    { auction int?} {  [
+                            { auction time < } { [START-OFFER "" AUCTION-TIME time + ]}
+                            { true } { auction }
+                        ] cond
+                    } 
+    { auction arr?} {  [
+                            { auction .2 time > } { auction }
+                            { auction .2 time < }  { auction .1 }
+                        ] cond
+                    }
+    { auction str? } { auction }
+    
+}cond-fun
+
+test-update-auction:(){
+    10 11 update-auction [START-OFFER "" AUCTION-TIME 11 +] test=
+    12 11 update-auction 12 test=
+    "Beren" 25 update-auction "Beren" test=             
+    [0.0 "" 14] 10 update-auction [0.0 "" 14] test=    # time geringer als startzeit?
+    [10.0 "Tim" 0] 11 update-auction "Tim" test=       # time größer als Startzeit? 
+    [0.0 "" 14] "" 5.0 bid [0.0 "" 14] test=           # Bidder = leerer Str 
+    test-stats
+}fun
+
+test-update-auction
+test-stats
+
+
+# Don't change the code below this point, 
+# except for calling animate at the very bottom.
+# Clicking sets target speed.
+
+generate-button: (text :Str, pressed :Bool -> :Arr){
+    color: "darkgrey" !
+    pressed {
+        color: "grey" !
+    }if
+    [rectangle: 100 20 color ] button!
+    [overlay: [button [rectangle: 102 22 "black" ]]] button!
+    [overlay: [[text: text 14] button]
+        on-mouse-press: (state x y -> :Obj) { 
+            state 0 true set 
+        } lam
+        on-mouse-release: (state x y -> :Obj) { 
+            "Bitte Namen eingeben." println 
+            read-line trim name!
+            "Bitte Gebot eingeben." println 
+            read-int offer!
+            state 0 false set state!
+            state 1 state .1 name offer bid set
+        } lam
+    ]
+}fun
+
+
+animate: {
+    "Postfix-Bay" 500 250 [false 1 time-millis 0] [
+        on-draw: (state :Arr) {
+            state .0 pressed!
+            state .1 auction!
+            state .3 time!
+
+            [rectangle: 150 50 "white"] label!
+            
+             {
+                {auction str?} {
+                     [overlay: [[text: "Die Auktion ist beendet. " auction + " ist Höchstbietender!" +  20] label]] 
+                } #auction already ended owner payed offer
+                {auction int?} {
+                    [overlay: [[text: "Die Auktion startet in: " auction time -  str + " Sekunden" + 20] label]] 
+                } # if it is time start auction
+                {auction arr?}{
+                    "Bieten!" pressed generate-button button!
+                    auction .1 bidder!
+                    bidder "" ={
+                        "Noch kein Gebot" bidder!
+                    }if
+                    
+                    [overlay: [[text: "Bieten Sie auf das Postfix Lösungsbuch!" 20] label]] title!
+                    [overlay: [[text: "Aktuelles Gebot: " auction .0 str "€" + + 14] label]] offer!
+                    [overlay: [[text: "Das Angebot endet in "  auction .2 time - str " Sekunden." + + 12] label]] remaining-time!
+                    [overlay: [[text: "von: " bidder + 14] label]] bidder-label!
+                    [above: [title offer bidder-label remaining-time button]] 
+                }
+            }cond
+
+        } lam
+        on-tick: (state :Arr -> :Obj) { 
+            state .1 auction-state!
+            #auction-state str println
+            time-millis state .2 - 1000 div time!
+            #time  println
+            auction-state time update-auction auction-state!
+            state 1 auction-state set state!
+            state 3 time set
+        } lam
+       
+
+    ] show
+} fun
+
+# Animate only if you are sure that your code works. Graphics output is not
+# very robust yet. An error might mean that you have to close the IDE and
+# start the IDE again. Always save (Ctrl+S) your work!
+
+# todo: remove comment to animate
+ animate

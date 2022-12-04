@@ -1,0 +1,24 @@
+﻿#<	Stephan Jokiel
+	Maxine Rahlfes	>#
+
+
+# mit Seiteneffekt
+"current_value" 5 str store-value
+
+add: ( x :Num -> :Num ) {
+    "current_value" load-value int 
+    x +
+   dup
+   "current_value" swap str store-value
+} fun
+
+
+2 add add add
+
+
+#ohne Seiteneffekt
+add2: ( a :Num, b :Num, -> :Num) {
+    a b +
+} fun
+ 
+2 5 add2 5 add2
