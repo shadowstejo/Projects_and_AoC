@@ -1,0 +1,116 @@
+﻿#<	Stephan Jokiel
+	Maxine Rahlfes	>#
+
+#<
+Die Funktion "corona" multipliziert die Anzahl der Infizierten Personen mit dem R-Wert hoch der Zahl der Epochen. 
+@param infected-people: die Anzahl an Infizierten Personen in der ersten Epoche. 
+@param r : der Faktor, um den sich die Zahl der infiierkten Personen pro Epoche verändert.
+@param epoch : gibt die Zahl der Epcohen an. 
+@return : gibt die Anzahl der Infizierten nach Ablauf einer bestimmten Zeit unter Rücksichtsahme einer Reproduktionszahl r.
+>#
+corona: (infected-people :Int, r :Flt, epoch :Int -> :Int){
+    infected-people r epoch pow * round
+}fun
+
+#<
+Die Funktion "corona2" multipliziert ebenfalls die infiierten Persinen mit dem R-Wert hoch die Zahl der Epochen. Hier gechieht es jedoch durch einer for-Schleife. 
+@param infected-people : die Anzahl der infizierten Personen in der ersten Epoche
+@param r : der Faktor, um den sich die Zahl der infizierten Personen pro Epcoch erhöht. 
+@param epoch : gibt die Zahl der Epochen an.
+@return :  gibt die Anzahl der Infizierten nach Ablauf einer bestimmten Zeit unter Rücksichtsahme einer Reproduktionszahl r.
+>#
+
+corona2: (infected-people :Int, r :Flt, epoch :Int -> :Arr) {
+    [   
+        infected-people
+        1 epoch 1 + {       #geht durch die Werte von 1 bis 31 (wobei 31 ausgelassen wird (?))
+            pop 
+            dup r * round
+        } for 
+    ]
+} fun 
+#<
+@param new-r Nach turn-epoch Epochen wird der R-Wert (r) neu bestimmt.
+@param turn-epoch Die Anzahl an Epochen ab welcher sich der R-Wert (r) zu new-r ändert.
+@return gibt die Anzahl Infizierter nach Epochen epoch unter Berücksichtigung von r und new-r.
+>#
+corona3: (infected-people :Int, r :Flt, epoch :Int, new-r :Flt, turn-epoch :Int -> :Arr) {
+    [   
+        infected-people
+        1 epoch 1 + {
+            turn-epoch >= { new-r r! } if       #überprüft in der for-schleife, ob der epoch-Wert größer gleich dem turn-epoch wert ist
+            dup r * round
+        } for 
+    ]
+} fun 
+
+
+#Different results? -> die unterschiedlichen Ergebnisse bei den Programmen corona und corona2 lassen sich auf das Runden zurükführen
+100 1.1 30 corona println
+100 1.1 30 corona2 30 get println
+100 1.1 30 1.5 20 corona3 30 get println
+88 1.1 40 1.3 22 corona3 40 get println
+50 1.0 60 1.5 25 corona3 60 get println
+
+
+"" println
+#<
+Visualizes the given array and prints also the value. Each array value is displayed in a new line. E.g. 
+    [1 2 3 4 5] 1 print-infection-array
+    * 1
+    ** 2
+    *** 3
+    **** 4
+    ***** 5
+    [1 2 3 4 5] 2 print-infection-array
+     1
+    * 2
+    * 3
+    ** 4
+    ** 5
+@param infected-array The array containing the the amount of infected people e.g. [1 3 5 8]
+@param infected-per-asterix The amount of infected people that should be displayed by one '*' 
+>#
+print-infection-array: (infected-array :Arr, infected-per-asterix :Int){
+ 
+        infected-array { 
+            dup 
+            infected-per-asterix div           #greift auf die Array [1 2 3 4 5] zurück und öffnet die for-Schleife [bei einer array-for-schleife wird keine lower und upper bestimmung benötigt] und nimmt die Divergenz zwiscehn dem Array wert und dem Aesteric-Wert genommen)
+             1 swap 1 + {                                  # in dieser Zeile wird der Upper Wert und lower Wert für die innere for-schleife bestimmt 
+               pop "*" print 
+            } for 
+            " " print 
+            println
+        } for
+     
+    
+}  fun
+
+
+#Test 1
+[10 20 30 40 50] 9 print-infection-array
+#Expected output:
+#   * 1
+#   ** 2
+#   *** 3
+#   **** 4
+#   ***** 5
+"" println
+
+#Test 2
+[1 2 3 4 5] 2 print-infection-array
+#Expected output:
+#    1
+#   * 2
+#   * 3
+#   ** 4
+#   ** 5
+"" println
+
+
+
+#... corona3 infections!
+#infections ... print-infection-array
+#"" println
+
+50 1.1 30 1.4 26 corona3 100 print-infection-array

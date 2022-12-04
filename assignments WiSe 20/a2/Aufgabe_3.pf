@@ -1,0 +1,39 @@
+﻿#<	Stephan Jokiel
+	Maxine Rahlfes	>#
+
+#<
+@param i Die Zahl für die man die Funktion nutzen möchte.
+@return Gibt bei negativem "i" i * -1, d.h. die Zahl positiv zurück
+        
+Bei bereits positivem "i" i*2, d.h. i dupliziert zurück.
+>#
+f: (i :Int -> :Int) {
+    "called f" println 
+    i 0 < {
+        i -1 * 
+    } {
+        i 2 *
+    } if 
+    
+} fun 
+
+-3 f f
+
+#<
+@param a ist die Zahl, von welcher man die Wurzel haben möchte.
+@return gibt den Näherungswert an die Wurzel der genannten Zahl.
+>#
+root: (a :Num -> :Num)  {
+    x: 1 ! {
+        x a x / + x!
+        x 0.5 * dup x!
+        a x dup * - abs 0.01 <= breakif pop
+        }loop
+} fun
+
+"Wurzel aus 2: " print
+2 root println
+"Wurzel aus 4: " print
+4 root println
+"Wurzel aus 9: " print
+9 root println

@@ -1,0 +1,33 @@
+﻿#<	Stephan Jokiel
+	Maxine Rahlfes	>#
+
+#<
+Entwickeln Sie eine Funktion, overtime, die für eine gegebene 
+Anzahl Wochenarbeitsstunden die darin enthaltenen Überstunden 
+berechnet. Nehmen Sie eine reguläre Wochenarbeitszeit von 
+36 Stunden an. 
+>#
+
+
+36 regular_weekly_hours! # Reguläre Wochenarbeitsstunden in Stunden
+
+#<
+@param hours gibt an, wieviele Stunden gearbeitet wurde
+@return gibt zurück, wieviele Überstunden darin enthalten sind.
+>#
+overtime: (hours :Int -> :Int) {
+    hours regular_weekly_hours <= {
+       0
+    } {
+       hours regular_weekly_hours -
+    } if
+} fun
+  
+overtime-test: {
+    35 overtime  0 test=
+    36 overtime 0 test=
+    50 overtime 14 test=
+    test-stats
+} fun
+
+overtime-test
