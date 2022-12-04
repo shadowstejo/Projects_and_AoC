@@ -1,0 +1,11 @@
+﻿#<	Stephan Jokiel
+	Maxine Rahlfes	>#
+
+read-int
+dup
+ , -10 >=
+ swap
+ , 0 <= 
+  , and
+print
+
