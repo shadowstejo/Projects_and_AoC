@@ -1,4 +1,6 @@
-with open("input.txt") as f:
+import os
+
+with open(os.path.dirname(os.path.abspath(__file__)) + "\input.txt") as f:
     list2 = f.readlines()
     lgt = len(list2)
     gesamt = 0
