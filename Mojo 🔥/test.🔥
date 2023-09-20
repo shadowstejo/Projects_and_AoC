@@ -1,0 +1,13 @@
+import math
+from benchmark import Benchmark
+
+
+fn power(a:Int64, b:Int64) ->Int64: #wenn man UInt64 nehmen würde, fallen negative Zahlen weg und es geht bis 2^64 -1
+    let l:Int64 = a
+    let u:Int64 = b
+    let n = math.math.pow(l,u)
+    return n
+fn main():
+    print(power(5,5))
+    print(power(7,30))
+    print(power(2,63)-1)
